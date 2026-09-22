@@ -14,6 +14,19 @@ for(let i=0;i<55;i++){const mat=new THREE.LineBasicMaterial({color:0x64dfff,tran
 for(let i=0;i<18;i++){let curve=new THREE.EllipseCurve(0,0,4+i*.22,7+i*.15,0,Math.PI*2);let pts=curve.getPoints(90).map(p=>new THREE.Vector3(p.x,0,p.y));let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x48efae,transparent:true,opacity:.25}));line.rotation.x=Math.PI/2;line.rotation.z=i*.31;s.add(line)}
 const pg=new THREE.BufferGeometry(),pa=[];for(let i=0;i<900;i++)pa.push((Math.random()-.5)*36,(Math.random()-.5)*20,(Math.random()-.5)*20);pg.setAttribute('position',new THREE.Float32BufferAttribute(pa,3));s.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xa9ffd9,size:.035,transparent:true,opacity:.65})));
 for(let i=0;i<12;i++){let n=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),new THREE.MeshBasicMaterial({color:0xfff1a8}));n.position.set((Math.random()-.5)*16,(Math.random()-.5)*9,(Math.random()-.5)*9);s.add(n)}
+let boundaryObjects=s.children.filter(o=>o.type==="Mesh"&&o.material&&o.material.wireframe&&o.geometry&&o.geometry.type==="SphereGeometry");
+const spacecraftNodes=s.children.filter(o=>o.type==="Mesh"&&o.geometry&&o.geometry.type==="SphereGeometry"&&o.geometry.parameters?.radius===.12);
+function applyTwin(snapshot){
+ const data=snapshot?.data||snapshot; const b=data?.boundaries||[];
+ const mp=b.find(x=>x.boundary_type==="MAGNETOPAUSE"), bs=b.find(x=>x.boundary_type==="BOW_SHOCK");
+ if(mp&&boundaryObjects[0]){const q=mp.standoff_re/10;boundaryObjects[0].scale.set(10*q,6*q,6*q)}
+ if(bs&&boundaryObjects[1]){const q=bs.standoff_re/14.5;boundaryObjects[1].scale.set(14*q,8*q,8*q)}
+ const craft=Object.values(data?.spacecraft||{});
+ craft.slice(0,spacecraftNodes.length).forEach((x,i)=>{const p=x.position_re||x.position||x.position_gse_re;if(p)spacecraftNodes[i].position.set(p.x||0,p.y||0,p.z||0)});
+}
+async function syncTwin(){try{const x=await fetch("/api/v1/twin/snapshot",{cache:"no-store"});if(x.ok)applyTwin(await x.json())}catch(e){}}
+syncTwin();setInterval(syncTwin,5000);
+try{const proto=location.protocol==="https:"?"wss":"ws";const ws=new WebSocket(proto+"://"+location.host+"/api/v1/twin/stream");ws.onmessage=e=>{try{applyTwin(JSON.parse(e.data))}catch(_){}}}catch(e){}
 const clock=new THREE.Clock();
 function draw(){let w=innerWidth,h=innerHeight;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();ctl.update();const t=clock.getElapsedTime();earth.rotation.y+=.0008;atmosphere.rotation.y=earth.rotation.y;grid.rotation.y=earth.rotation.y;sunBall.scale.setScalar(1+.05*Math.sin(t*2));r.render(s,cam);requestAnimationFrame(draw)}draw();
 </script></body></html>
