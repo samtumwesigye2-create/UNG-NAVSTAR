@@ -1,11 +1,13 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse
 from .routes import r
+from .production_routes import p
 from .schemas import Observation, SpacecraftState
 from .state import twin
 
 app=FastAPI(title="UNG-NAVSTAR",version="1.0.0")
 app.include_router(r)
+app.include_router(p)
 
 @app.get("/health")
 def health(): return {"status":"ok","service":"ung-navstar-digital-twin-core"}
@@ -34,6 +36,10 @@ async def stream(ws: WebSocket):
     try:
         while True: await ws.receive_text()
     except WebSocketDisconnect: twin.clients.discard(ws)
+
+@app.get("/3d",response_class=HTMLResponse)
+def webgl():
+    return FileResponse("app/webgl.html")
 
 @app.get("/",response_class=HTMLResponse)
 def home():
