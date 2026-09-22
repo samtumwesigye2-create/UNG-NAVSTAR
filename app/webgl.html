@@ -41,6 +41,14 @@ document.getElementById("toggleRoutes").onclick=()=>routeGroup.visible=!routeGro
 document.getElementById("toggleLinks").onclick=()=>linkGroup.visible=!linkGroup.visible;
 document.getElementById("toggleForecast").onclick=()=>forecastGroup.visible=!forecastGroup.visible;
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();r.domElement.addEventListener("pointerdown",ev=>{pointer.x=ev.clientX/innerWidth*2-1;pointer.y=-(ev.clientY/innerHeight)*2+1;ray.setFromCamera(pointer,cam);const hits=ray.intersectObjects(spacecraftNodes);if(hits.length){const o=hits[0].object;document.getElementById("selection").textContent="Selected node • x "+o.position.x.toFixed(2)+" • y "+o.position.y.toFixed(2)+" • z "+o.position.z.toFixed(2)+" Re"}});
+const liveDot=document.createElement("div");liveDot.style.cssText="position:fixed;left:12px;bottom:12px;z-index:8;background:#071018dd;border:1px solid #24566c;border-radius:8px;padding:8px;color:#8fffc4;font:12px system-ui";liveDot.textContent="● LIVE • telemetry updating";document.body.appendChild(liveDot);
+let livePressure=2,liveWind=400;
+async function pollEnvironment(){try{const r=await fetch("/api/v1/twin/snapshot",{cache:"no-store"}),d=await r.json(),x=d?.data||d;const obs=Object.values(x?.observations||{});const latest=obs[obs.length-1];if(latest){const v=latest.value??latest.payload?.value;if(latest.observation_type==="solar_wind_dynamic_pressure"&&Number(v)>0)livePressure=Number(v)}liveDot.textContent="● LIVE • "+new Date().toLocaleTimeString()+" • Pdyn "+livePressure.toFixed(2)+" nPa"}catch(e){liveDot.textContent="● RECONNECTING"}}setInterval(pollEnvironment,2000);pollEnvironment();
 const clock=new THREE.Clock();
-function draw(){let w=innerWidth,h=innerHeight;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();ctl.update();const t=clock.getElapsedTime();earth.rotation.y+=.0008;atmosphere.rotation.y=earth.rotation.y;grid.rotation.y=earth.rotation.y;sunBall.scale.setScalar(1+.05*Math.sin(t*2));r.render(s,cam);requestAnimationFrame(draw)}draw();
+function draw(){let w=innerWidth,h=innerHeight;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();ctl.update();const t=clock.getElapsedTime();earth.rotation.y+=.0008;atmosphere.rotation.y=earth.rotation.y;grid.rotation.y=earth.rotation.y;sunBall.scale.setScalar(1+.05*Math.sin(t*2));
+routeGroup.children.forEach((o,i)=>{if(o.material)o.material.opacity=.45+.35*Math.sin(t*2+i)});
+linkGroup.children.forEach((o,i)=>{if(o.material)o.material.opacity=.18+.18*Math.sin(t*3+i)});
+forecastGroup.children.forEach((o,i)=>{o.scale.setScalar(.8+.25*Math.sin(t*2+i))});
+s.children.forEach(o=>{if(o.type==="Points")o.rotation.y+=.0006});
+r.render(s,cam);requestAnimationFrame(draw)}draw();
 </script></body></html>
