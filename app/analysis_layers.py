@@ -69,3 +69,20 @@ def mission_record(frames:list[dict]): return {"frames":frames,"count":len(frame
 
 def search_catalog(query:str,objects:list[dict]):
  q=query.lower(); return [o for o in objects if q in str(o.get("id","")).lower() or q in str(o.get("name","")).lower() or q in str(o.get("type","")).lower()]
+
+
+def trajectory_dynamics(body: dict, samples: int = 360):
+    """Orbit/trajectory analysis contract: propagated path, resonance diagnostics and uncertainty."""
+    return {"body": body, "samples": max(32,min(samples,5000)), "layers":["propagated_trajectory","resonance_pattern","ground_track","uncertainty_cone","monte_carlo"], "provenance":"MODELED"}
+
+def model_learning_diagnostics(prediction: float, target: float, model_version: str = "navstar-residual-baseline-v1"):
+    """Visible model-error/backprop diagnostics; never promotes a model automatically."""
+    error=prediction-target
+    loss=error*error
+    return {"model_version":model_version,"prediction":prediction,"target":target,"error":error,"loss":loss,
+            "learning_flow":["forward_pass","loss","backpropagation","parameter_update","validation"],
+            "promotion":"REQUIRES_VALIDATION","operational_model_changed":False}
+
+def model_training_history(points: list[dict]):
+    """Expose train/validation loss history for Model Lab visualization."""
+    return {"points":points,"count":len(points),"purpose":"MODEL_LAB","automatic_operational_promotion":False}
