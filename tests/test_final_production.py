@@ -9,3 +9,10 @@ def test_prod_locked(monkeypatch):
  monkeypatch.setenv("NAVSTAR_API_KEY","secret"); r=c.get("/api/v1/production/feeds"); assert r.status_code==401
 def test_prod_key(monkeypatch):
  monkeypatch.setenv("NAVSTAR_API_KEY","secret"); r=c.get("/api/v1/production/feeds",headers={"X-API-Key":"secret"}); assert r.status_code==200
+
+
+def test_3d_operational_controls():
+    r = client.get("/3d")
+    assert r.status_code == 200
+    for marker in ["/api/v1/twin/snapshot", "/api/v1/twin/stream", "RESET VIEW", "ROUTES", "COMMS", "FORECAST", "Renderer:"]:
+        assert marker in r.text
