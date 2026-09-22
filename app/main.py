@@ -37,6 +37,10 @@ async def stream(ws: WebSocket):
         while True: await ws.receive_text()
     except WebSocketDisconnect: twin.clients.discard(ws)
 
+@app.get("/3d",response_class=HTMLResponse)
+def webgl():
+    return FileResponse("app/webgl.html")
+
 @app.get("/",response_class=HTMLResponse)
 def home():
     return FileResponse("app/operator.html")
