@@ -1,11 +1,13 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse
 from .routes import r
+from .production_routes import p
 from .schemas import Observation, SpacecraftState
 from .state import twin
 
 app=FastAPI(title="UNG-NAVSTAR",version="1.0.0")
 app.include_router(r)
+app.include_router(p)
 
 @app.get("/health")
 def health(): return {"status":"ok","service":"ung-navstar-digital-twin-core"}
