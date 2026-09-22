@@ -33,7 +33,7 @@ def constellation(): return constellation_product([s.model_dump(mode="json") for
 @r.get("/integrations/orion")
 def orion(): return orion_product(twin.snapshot().model_dump(mode="json"))
 
-from .analysis_layers import relationship_graph, magnetic_connectivity, lineage, uncertainty_heatmap, forecast_ghosts, correlation_explorer, coverage_shells, fuse_measurements, spacecraft_bubble, proximity, route_risk, comms_mesh, resilience, twin_difference, model_battle, anomaly_constellations, explain_object, bookmark, mission_record, search_catalog
+from .analysis_layers import relationship_graph, magnetic_connectivity, lineage, uncertainty_heatmap, forecast_ghosts, correlation_explorer, coverage_shells, fuse_measurements, spacecraft_bubble, proximity, route_risk, comms_mesh, resilience, twin_difference, model_battle, anomaly_constellations, explain_object, bookmark, mission_record, search_catalog, trajectory_dynamics, model_learning_diagnostics, model_training_history
 
 @r.post("/analysis/{layer}")
 def analysis_layer(layer:str, body:dict):
@@ -57,7 +57,10 @@ def analysis_layer(layer:str, body:dict):
       "explain":lambda:explain_object(body),
       "bookmark":lambda:bookmark(body),
       "mission-record":lambda:mission_record(body.get("frames",[])),
-      "search":lambda:search_catalog(body.get("query",""),body.get("objects",[]))
+      "search":lambda:search_catalog(body.get("query",""),body.get("objects",[])),
+      "trajectory-dynamics":lambda:trajectory_dynamics(body.get("body",{}),body.get("samples",360)),
+      "model-learning":lambda:model_learning_diagnostics(float(body.get("prediction",0)),float(body.get("target",0)),body.get("model_version","navstar-residual-baseline-v1")),
+      "model-training-history":lambda:model_training_history(body.get("points",[]))
     }
     if layer not in table:
       from fastapi import HTTPException
