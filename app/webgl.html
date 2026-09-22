@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>NAVSTAR 3D</title><style>html,body,#c{margin:0;width:100%;height:100%;overflow:hidden;background:#000}#hud{position:fixed;z-index:2;left:16px;top:16px;color:#dbe9ff;font:12px system-ui;background:#07101dcc;padding:12px;border:1px solid #294467;border-radius:8px}b{color:#fff}</style></head><body><div id="hud"><b>NAVSTAR 3D DIGITAL TWIN</b><br>Earth · boundaries · field lines · particles · spacecraft · uncertainty<br>Drag: orbit · wheel: zoom</div><canvas id="c"></canvas><script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js';
+import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js';
+const r=new THREE.WebGLRenderer({canvas:document.querySelector('#c'),antialias:true});r.setPixelRatio(devicePixelRatio);
+const s=new THREE.Scene(),cam=new THREE.PerspectiveCamera(50,2,.1,1000);cam.position.set(0,8,25);const ctl=new OrbitControls(cam,r.domElement);ctl.enableDamping=true;
+s.add(new THREE.AmbientLight(0x7799bb,1.2));const sun=new THREE.DirectionalLight(0xffffff,3);sun.position.set(20,3,5);s.add(sun);
+const earth=new THREE.Mesh(new THREE.SphereGeometry(3,64,32),new THREE.MeshStandardMaterial({color:0x174d8a,roughness:.7}));s.add(earth);
+for(const scale of [[10,6,6],[14,8,8]]){let g=new THREE.SphereGeometry(1,40,20),m=new THREE.MeshBasicMaterial({color:0x43d8ff,wireframe:true,transparent:true,opacity:.13}),o=new THREE.Mesh(g,m);o.scale.set(...scale);s.add(o)}
+for(let i=0;i<18;i++){let curve=new THREE.EllipseCurve(0,0,4+i*.22,7+i*.15,0,Math.PI*2);let pts=curve.getPoints(90).map(p=>new THREE.Vector3(p.x,0,p.y));let line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0x48efae,transparent:true,opacity:.25}));line.rotation.x=Math.PI/2;line.rotation.z=i*.31;s.add(line)}
+const pg=new THREE.BufferGeometry(),pa=[];for(let i=0;i<900;i++)pa.push((Math.random()-.5)*36,(Math.random()-.5)*20,(Math.random()-.5)*20);pg.setAttribute('position',new THREE.Float32BufferAttribute(pa,3));s.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0xa9ffd9,size:.035,transparent:true,opacity:.65})));
+for(let i=0;i<12;i++){let n=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),new THREE.MeshBasicMaterial({color:0xfff1a8}));n.position.set((Math.random()-.5)*16,(Math.random()-.5)*9,(Math.random()-.5)*9);s.add(n)}
+function draw(){let w=innerWidth,h=innerHeight;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();ctl.update();earth.rotation.y+=.0008;r.render(s,cam);requestAnimationFrame(draw)}draw();
+</script></body></html>
