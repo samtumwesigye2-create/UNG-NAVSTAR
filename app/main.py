@@ -4,6 +4,7 @@ from .routes import r
 from .production_routes import p
 from .schemas import Observation, SpacecraftState
 from .state import twin
+from ung_shared.system_adapter import register_frame, convert_position, link_timing
 
 app=FastAPI(title="UNG-NAVSTAR",version="1.0.0")
 app.include_router(r)
@@ -36,6 +37,18 @@ async def stream(ws: WebSocket):
     try:
         while True: await ws.receive_text()
     except WebSocketDisconnect: twin.clients.discard(ws)
+
+@app.post("/api/v1/frames/register")
+def frame_register(body: dict):
+    return register_frame(body["source"],body["destination"],body["matrix"],body.get("timestamp"),body.get("version","ung-frame-v1"))
+
+@app.post("/api/v1/frames/convert")
+def frame_convert(body: dict):
+    return convert_position(body["position"],body["source"],body["destination"])
+
+@app.post("/api/v1/propagation/link")
+def propagation_link(body: dict):
+    return link_timing(body["origin_m"],body["destination_m"],float(body.get("speed_mps",299792458.0)))
 
 @app.get("/3d",response_class=HTMLResponse)
 def webgl():
