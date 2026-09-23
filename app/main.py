@@ -4,7 +4,7 @@ from .routes import r
 from .production_routes import p
 from .schemas import Observation, SpacecraftState
 from .state import twin
-from ung_shared.system_adapter import register_frame, convert_position, link_timing
+from .frame_propagation import register_frame, convert_position, link_timing
 
 app=FastAPI(title="UNG-NAVSTAR",version="1.0.0")
 app.include_router(r)
