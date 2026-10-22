@@ -12,7 +12,7 @@ def test_prod_key(monkeypatch):
 
 
 def test_3d_operational_controls():
-    r = client.get("/3d")
+    r = c.get("/3d")
     assert r.status_code == 200
     for marker in ["/api/v1/twin/snapshot", "/api/v1/twin/stream", "RESET VIEW", "ROUTES", "COMMS", "FORECAST", "Renderer:"]:
         assert marker in r.text
